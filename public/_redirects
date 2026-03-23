@@ -1,0 +1,9 @@
+# Landing page at root
+/           /landing.html     200
+
+# React app at /app
+/app        /index.html       200
+/app/*      /index.html       200
+
+# Privacy policy
+/privacy    /privacy.html     200
