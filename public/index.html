@@ -19,6 +19,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
+  <!-- Premium Animations -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap" rel="stylesheet" />
@@ -28,6 +30,17 @@
 
   <!-- React mounts here — DO NOT REMOVE THIS DIV -->
   <div id="root"></div>
+
+  <!-- Service Worker Registration for Offline PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then((reg) => {
+          console.log('Taskflow PWA Service Worker registered.', reg.scope);
+        }).catch((err) => console.error('SW registration failed:', err));
+      });
+    }
+  </script>
 
   <!--
     TASKFLOW — Built with React
