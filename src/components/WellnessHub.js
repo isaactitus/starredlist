@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MOOD_OPTIONS, WATER_GOAL } from '../utils/constants';
+import { WATER_GOAL } from '../utils/constants';
 
 const BreathingTool = ({ accent }) => {
   const [phase, setPhase] = useState('Inhale');
@@ -52,21 +52,14 @@ export const WellnessHub = ({
   activeProfile 
 }) => {
   const { 
-    moods, 
-    sleepLogs, 
     calorieLogs, 
     getTodayWater, 
     addWater, 
-    saveMood,
-    sleepGoalHrs,
     calorieGoal
   } = wellness;
 
   const todayWater = getTodayWater();
   const waterProgress = Math.min(100, (todayWater / WATER_GOAL) * 100);
-
-  const lastSleep = sleepLogs.length > 0 ? sleepLogs[0] : null;
-  const lastMood = moods.filter(m => m.profileId === activeProfile).slice(-1)[0];
 
   return (
     <div className="wellness-hub" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 16, overflowY: 'auto' }}>
@@ -78,7 +71,7 @@ export const WellnessHub = ({
          </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
         {/* Hydration Card */}
         <div style={{ background: 'var(--s2)', borderRadius: 20, padding: 16, border: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', gap: 10 }}>
            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -103,36 +96,6 @@ export const WellnessHub = ({
                </button>
             </div>
         </div>
-
-        {/* Mood Card */}
-        <div style={{ background: 'var(--s2)', borderRadius: 20, padding: 16, border: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', gap: 10 }}>
-           <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--t2)' }}>😊 Log Mood</div>
-           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
-              {Object.entries(MOOD_OPTIONS).map(([key, opt]) => (
-                <button 
-                  key={key} 
-                  onClick={() => saveMood(key)}
-                  style={{ 
-                    fontSize: 20, 
-                    padding: '8px 4px', 
-                    borderRadius: 10, 
-                    border: lastMood?.mood === key ? `1.5px solid ${accent.v}` : '1px solid var(--b1)', 
-                    background: lastMood?.mood === key ? `${accent.v}15` : 'var(--s3)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                  title={opt.label}
-                >
-                  {opt.emoji}
-                </button>
-              ))}
-           </div>
-           {lastMood && (
-             <div style={{ fontSize: 10, color: 'var(--t3)', textAlign: 'center', marginTop: 4 }}>
-                Last: <b>{MOOD_OPTIONS[lastMood.mood].label}</b> at {lastMood.time}
-             </div>
-           )}
-        </div>
       </div>
 
       {/* Breathing Section */}
@@ -142,10 +105,6 @@ export const WellnessHub = ({
       <div style={{ background: 'var(--s2)', borderRadius: 20, padding: 16, border: '1px solid var(--b1)' }}>
          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>Health Insights</div>
          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-               <div style={{ fontSize: 13, color: 'var(--t2)' }}>🛌 Last Sleep</div>
-               <div style={{ fontSize: 13, fontWeight: 700 }}>{lastSleep ? `${lastSleep.duration}h` : '--'} <span style={{ color: 'var(--t3)', fontWeight: 400 }}>/ {sleepGoalHrs}h</span></div>
-            </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                <div style={{ fontSize: 13, color: 'var(--t2)' }}>🍎 Daily Calories</div>
                <div style={{ fontSize: 13, fontWeight: 700 }}>{calorieLogs.length > 0 ? calorieLogs.reduce((acc, l) => acc + l.cal, 0) : 0} <span style={{ color: 'var(--t3)', fontWeight: 400 }}>/ {calorieGoal} kcal</span></div>

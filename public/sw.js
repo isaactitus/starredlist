@@ -1,4 +1,4 @@
-const CACHE_NAME = "taskflow-v2";
+const CACHE_NAME = "starredlist-v2";
 const ASSETS = [
   "/",
   "/index.html",
@@ -61,7 +61,7 @@ self.addEventListener("fetch", (e) => {
 
 // Handle Push Notifications Events
 self.addEventListener("push", (e) => {
-  const data = e.data ? e.data.json() : { title: "Taskflow Reminder" };
+  const data = e.data ? e.data.json() : { title: "StarredList Reminder" };
   const options = {
     body: data.body || "You have tasks waiting!",
     icon: "/logo192.png",

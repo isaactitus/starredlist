@@ -1,0 +1,28 @@
+631: .streak-row{display:flex;gap:6px;flex-wrap:wrap;}
+1659:     return `✦ **StarredList Ultimate — Everything${hi}:**\n\n📋 **Tasks** — priorities, categories, due dates, subtasks, tags, photos, recurring\n⏰ **R
+1673:     return `🔁 **Habits${hi} — how they actually work:**\n\n**The neuroscience:** Habits are stored in the basal ganglia — the brain's automation centr
+3606:     // == 30-day heatmap (GitHub style) ==
+3654:         <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 14 }}>
+3702:         {/* ── Activity Heatmap */}
+3704:           <div className="chart-title" style={{ display: "flex", alignItems: "center", gap: 7 }}><svg width="15" height="15" viewBox="0 0 24 24" fill=
+3705:           <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 8 }}>
+3946:         <div className="cal-grid-month" style={{ gridTemplateRows: `28px repeat(${numRows}, 1fr)` }}
+4658:   const getHeatmapDays = (n) => Array.from({ length: n }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - (n - 1) + i); return d.toISOString
+4729:     const heatmapDays = getHeatmapDays(210);
+4926:                     {/* Heatmap */}
+4930:                         gridTemplateRows: "repeat(7, 1fr)",
+4936:                         {heatmapDays.map((date, i) => {
+5068:                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "var(--s1)", borderRadius: 18, overflow: "hidden", bo
+5083:                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10, padding: "0 16px 24px" }}>
+6067:         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 16 }}>
+6278:           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+6301:           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
+8085:                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
+8131:                   <div><div className="f-lbl">Icon</div><div style={{ display: "grid", gridTemplateColumns: "repeat(8,1fr)", gap: 5, marginTop: 4 }}>{
+8163:                   <div><div className="f-lbl">Icon</div><div style={{ display: "grid", gridTemplateColumns: "repeat(8,1fr)", gap: 5, marginTop: 4 }}>{
+8407:                   <div><div className="f-lbl">Icon</div><div style={{ display: "grid", gridTemplateColumns: "repeat(8,1fr)", gap: 6, marginTop: 4 }}>{
+8506:                     <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 16 }}>
+8543:                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "0 16px 16px", flex: 1, overflowY: "auto" }}>
+8589:                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+8672:                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "var(--s1)", borderRadius: 18, overflow: "hidden", bo
+8681:                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10, padding: "0 16px 24px" }}>

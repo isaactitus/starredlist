@@ -60,7 +60,12 @@ export const useTasks = () => {
 
   // == Computed ==
   const profileTasks = useMemo(() => 
-    tasks.filter(t => t.profileId === activeProfile), 
+    tasks.filter(t => t.profileId === activeProfile && !t.isCalendarSticker), 
+    [tasks, activeProfile]
+  );
+
+  const profileStickers = useMemo(() => 
+    tasks.filter(t => t.profileId === activeProfile && t.isCalendarSticker), 
     [tasks, activeProfile]
   );
 
@@ -162,6 +167,7 @@ export const useTasks = () => {
     activeProfile,
     setActiveProfile,
     profileTasks,
+    profileStickers,
     addTask,
     updateTask,
     deleteTask,

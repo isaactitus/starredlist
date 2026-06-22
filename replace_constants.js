@@ -1,4 +1,7 @@
-export const LANGS = {
+const fs = require('fs');
+let code = fs.readFileSync('c:/Users/isaac/taskflow/taskflow/src/utils/constants.js', 'utf8');
+
+const newLangs = `export const LANGS = {
   en: {
     name: "English", flag: "🇬🇧", t: {
       appName: "StarredList", tasks: "Tasks", add: "Add Task", done: "Done", active: "Active",
@@ -336,83 +339,11 @@ export const LANGS = {
       pinActive: "PIN 보호됨 🔒", activeStatus: "진행중", privacyPolicy: "개인정보 처리방침", termsOfService: "이용 약관"
     }
   }
-};
+};`;
 
-export const ACCENTS = [
-  { name: "Violet", v: "#7c6dfa", g: "#b06dfa" },
-  { name: "Teal", v: "#00d4aa", g: "#0097ff" },
-  { name: "Rose", v: "#ff6b9d", g: "#ff4757" },
-  { name: "Amber", v: "#ffb347", g: "#ffd93d" },
-  { name: "Sky", v: "#38bdf8", g: "#818cf8" },
-  { name: "Emerald", v: "#10b981", g: "#06d6a0" },
-  { name: "Coral", v: "#ff6b6b", g: "#ff8e53" },
-  { name: "Indigo", v: "#6366f1", g: "#8b5cf6" },
-  { name: "Galaxy ✨", v: "#c084fc", g: "#7c6dfa" },
-  { name: "Forest 🌿", v: "#4ade80", g: "#22c55e" },
-  { name: "Sunset 🌅", v: "#fb923c", g: "#f59e0b" },
-  { name: "Ocean 🌊", v: "#22d3ee", g: "#3b82f6" },
-];
+const matchStart = code.indexOf('export const LANGS');
+const matchEnd = code.indexOf('export const ACCENTS');
 
-export const ALARM_TONES = [
-  { id: "classic", label: "Classic Bell", icon: "◉" },
-  { id: "digital", label: "Digital Beep", icon: "◊" },
-  { id: "gentle", label: "Gentle Chime", icon: "♪" },
-  { id: "urgent", label: "Urgent Alert", icon: "⚡" },
-  { id: "melody", label: "Morning Melody", icon: "▲" },
-  { id: "pulse", label: "Pulse Buzz", icon: "◆" },
-];
-
-export const MUSIC_TRACKS = [
-  { id: "lofi", label: "Lo-Fi Chill", icon: "○", url: "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3" }
-];
-
-export const DEFAULT_CATEGORIES = [
-  { id: "personal", name: "Personal", icon: "◆", color: "#6bcb77" },
-  { id: "health", name: "Health", icon: "✚", color: "#ff6b6b" },
-  { id: "learning", name: "Learning", icon: "◇", color: "#ffd93d" },
-  { id: "finance", name: "Finance", icon: "$", color: "#00d4aa" },
-];
-
-export const EMOJI_LIST = ["💼", "👤", "💪", "📚", "💰", "🎨", "🛒", "✈️", "📌", "🏠", "🎯", "⚡", "🔥", "🌟", "🎵", "🍕", "🏋️", "🌿", "💡", "🚀", "❤️", "🎮", "📷", "🏆", "🌈", "🧘", "⚽", "🎸"];
-
-export const COLOR_LIST = ["#7c8ff5", "#f589a3", "#6bcb77", "#ffd93d", "#00d4aa", "#d47cff", "#ff9f43", "#48dbfb", "#ff6b6b", "#7c6dfa", "#10b981", "#f59e0b"];
-
-export const PRIORITIES = { 
-  high: { label: "High", color: "#ff6b6b", bg: "rgba(255,107,107,0.13)", icon: "■" }, 
-  medium: { label: "Medium", color: "#ffd93d", bg: "rgba(255,217,61,0.13)", icon: "◆" }, 
-  low: { label: "Low", color: "#6bcb77", bg: "rgba(107,203,119,0.13)", icon: "○" } 
-};
-
-export const INIT_TASKS = [];
-
-export const DEFAULT_PROFILES = [
-  { id: "default", name: "My Profile", icon: "◉", color: "#7c6dfa" },
-];
-
-export const FONTS = [
-  { id: "Plus Jakarta Sans", label: "Default (Jakarta)" },
-  { id: "Inter", label: "Inter (Clean)" },
-  { id: "Outfit", label: "Outfit (Modern)" },
-  { id: "Space Grotesk", label: "Space (Tech)" },
-  { id: "DM Sans", label: "DM Sans (Minimal)" },
-  { id: "JetBrains Mono", label: "Mono (Code)" },
-];
-
-export const GOAL_COLORS = ["#7c6dfa", "#48dbfb", "#6bcb77", "#ff9f43", "#ff6b6b", "#ff6b9d", "#ffd93d", "#a29bfe"];
-export const GOAL_ICONS = ["◆", "▲", "★", "✦", "→", "✚", "◇", "$", "◈", "◉", "◎", "◊", "⚡", "✕", "▮", "∎"];
-
-export const FREQ_OPTS = [
-  { id: "daily", label: "Daily" },
-  { id: "weekly", label: "Weekly" },
-  { id: "monthly", label: "Monthly" }
-];
-
-export const MOOD_OPTIONS = [
-  { label: "Exhausted", emoji: "😩", energy: 1, color: "#ff6b6b" },
-  { label: "Tired", emoji: "😔", energy: 2, color: "#ff9f43" },
-  { label: "Okay", emoji: "😐", energy: 3, color: "#ffd93d" },
-  { label: "Good", emoji: "😊", energy: 4, color: "#6bcb77" },
-  { label: "Amazing", emoji: "🤩", energy: 5, color: "#7c6dfa" },
-];
-
-export const WATER_GOAL = 8; // Default 8 glasses (2L)
+const modified = code.substring(0, matchStart) + newLangs + '\n\n' + code.substring(matchEnd);
+fs.writeFileSync('c:/Users/isaac/taskflow/taskflow/src/utils/constants.js', modified);
+console.log('constants updated!');
