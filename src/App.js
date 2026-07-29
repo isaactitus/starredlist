@@ -11,7 +11,7 @@ import {
 } from "./utils/constants";
 
 // Backend URL — change this to your Railway URL when deployed
-const BACKEND_URL = "https://starredlist-backend-production.up.railway.app";
+const BACKEND_URL = "https://starredlist-backend.onrender.com";
 
 async function callLibi(messages, systemPrompt, maxTokens = 1024) {
   const res = await fetch(`${BACKEND_URL}/api/chat`, {
