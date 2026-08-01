@@ -6076,6 +6076,11 @@ if (groqData) {
   const [webSearchInput, setWebSearchInput] = useState("");
   const [showWebSearch, setShowWebSearch] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+const [newsTopic, setNewsTopic] = useState("");
+const [newsArticles, setNewsArticles] = useState([]);
+const [newsLoading, setNewsLoading] = useState(false);
+const [newsNotice, setNewsNotice] = useState("Search a topic to see how different outlets are covering it.");
+const [newsSearched, setNewsSearched] = useState(false);
   const [notes, setNotes] = useState(() => { try { const s = localStorage.getItem("tf_notes"); return s ? JSON.parse(s) : []; } catch (e) { return []; } });
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [showNoteEditor, setShowNoteEditor] = useState(false);
@@ -6420,7 +6425,94 @@ if (groqData) {
     showNotif("📋 Duplicated!", note.title || "Note");
     play("add");
   };
+function NewsPage() {
+  const FLAGS = { in: "🇮🇳", us: "🇺🇸", gb: "🇬🇧", ca: "🇨🇦", au: "🇦🇺", sg: "🇸🇬", ph: "🇵🇭" };
+  const timeAgo = (iso) => {
+    const diffMs = Date.now() - new Date(iso).getTime();
+    const h = Math.floor(diffMs / 3600000);
+    if (h < 1) return "just now";
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+  };
 
+  const runNewsSearch = async (e) => {
+    e.preventDefault();
+    if (!newsTopic.trim()) return;
+    setNewsLoading(true);
+    setNewsSearched(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/news/compare?topic=${encodeURIComponent(newsTopic)}`);
+      const data = await res.json();
+      if (data.articles && data.articles.length) {
+        setNewsArticles(data.articles);
+        setNewsNotice(null);
+      } else {
+        setNewsArticles([]);
+        setNewsNotice("No results for that topic. Try something broader.");
+      }
+    } catch (err) {
+      setNewsNotice("Couldn't reach the news service. Check your connection and try again.");
+    }
+    setNewsLoading(false);
+  };
+
+  return (
+    <div style={{ padding: "20px 18px 100px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 16 }}>
+        <span style={{ fontSize: 20 }}>📰</span>
+        <div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "var(--t1)", letterSpacing: -.3 }}>Multi-Source News</div>
+          <div style={{ fontSize: 12.5, color: "var(--t3)" }}>Same story, every angle</div>
+        </div>
+      </div>
+
+      <form onSubmit={runNewsSearch} style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+        <div style={{ flex: "1 1 220px", display: "flex", alignItems: "center", background: "var(--s2)", borderRadius: 999, padding: "0 14px" }}>
+          <span style={{ fontSize: 14, color: "var(--t3)", marginRight: 6 }}>⌕</span>
+          <input
+            value={newsTopic}
+            onChange={e => setNewsTopic(e.target.value)}
+            placeholder="Search a topic — e.g. elections, AI, cricket"
+            style={{ flex: 1, border: "none", background: "transparent", padding: "11px 0", fontSize: 14, color: "var(--t1)", outline: "none" }}
+          />
+        </div>
+        <button type="submit" disabled={newsLoading} style={{
+          padding: "11px 22px", borderRadius: 999, border: "none",
+          background: newsLoading ? "var(--s2)" : `linear-gradient(135deg,${accent.v},${accent.g})`,
+          color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: newsLoading ? "default" : "pointer"
+        }}>
+          {newsLoading ? "Fetching…" : "Search"}
+        </button>
+      </form>
+
+      {newsNotice && (
+        <div style={{ background: "var(--accd)", border: `1px solid ${accent.v}44`, borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "var(--t2)", marginBottom: 16, lineHeight: 1.5 }}>
+          {newsNotice}
+        </div>
+      )}
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
+        {newsArticles.map((a, i) => (
+          <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" style={{
+            background: "var(--s1)", borderRadius: 16, overflow: "hidden", textDecoration: "none",
+            display: "flex", flexDirection: "column", border: "1px solid var(--b1)"
+          }}>
+            {a.image && <div style={{ height: 140, background: `var(--s2) url(${a.image}) center/cover no-repeat` }} />}
+            <div style={{ padding: "12px 14px 14px" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--accd)", color: "var(--acc)", fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 999, marginBottom: 8 }}>
+                <span>{FLAGS[a.sourceCountry] || "🌐"}</span>
+                <span>{a.source}</span>
+                <span style={{ opacity: .7, fontWeight: 500 }}>· {timeAgo(a.publishedAt)}</span>
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "var(--t1)", lineHeight: 1.35, marginBottom: 6 }}>{a.title}</div>
+              {a.description && <div style={{ fontSize: 12.5, color: "var(--t3)", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{a.description}</div>}
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
   function NotesPage() {
     const profileNotes = notes.filter(n => !n.profileId || n.profileId === activeProfile);
     const wordCount = (text = "") => text.trim().split(/\s+/).filter(Boolean).length;
@@ -8623,9 +8715,9 @@ if (!groqData || groqData.error) {
                   <span style={{ fontFamily: "'Trebuchet MS','Segoe UI',system-ui,sans-serif", fontSize: 18, fontWeight: 700, background: "linear-gradient(135deg,#22d3ee,#0ea5e9)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", letterSpacing: "-0.3px", whiteSpace: "nowrap" }}>StarredList</span>
                 </div>
                 <span className="topbar-title">
-                  {tab === "stats" ? t.stats : tab === "calendar" ? t.calendar : tab === "settings" ? t.settings : tab === "goals" ? "Goals" : tab === "habits" ? "Habits" : tab === "planner" ? "Daily Planner" : tab === "board" ? "Board" : tab === "starred" ? t.starred : tab === "overdue" ? t.overdue : tab === "today" ? t.today : tab === "done" ? t.done : t.tasks}
+{tab === "stats" ? t.stats : tab === "calendar" ? t.calendar : tab === "settings" ? t.settings : tab === "goals" ? "Goals" : tab === "habits" ? "Habits" : tab === "planner" ? "Daily Planner" : tab === "board" ? "Board" : tab === "starred" ? t.starred : tab === "overdue" ? t.overdue : tab === "today" ? t.today : tab === "done" ? t.done : tab === "news" ? "News" : t.tasks}
                 </span>
-                {!["bot", "stats", "calendar", "settings", "goals", "habits", "planner", "board", "notes"].includes(tab) && <div className="search-wrap"><span style={{ color: "var(--t3)", fontSize: 13 }}>⌕</span><input placeholder="Search…" value={search} onChange={e => setSearch(e.target.value)} />{search && <span style={{ cursor: "pointer", color: "var(--t3)", fontSize: 12 }} onClick={() => setSearch("")}>✕</span>}</div>}
+                {!["bot", "stats", "calendar", "settings", "goals", "habits", "planner", "board", "notes", "news"].includes(tab) && <div className="search-wrap"><span style={{ color: "var(--t3)", fontSize: 13 }}>⌕</span><input placeholder="Search…" value={search} onChange={e => setSearch(e.target.value)} />{search && <span style={{ cursor: "pointer", color: "var(--t3)", fontSize: 12 }} onClick={() => setSearch("")}>✕</span>}</div>}
                 <div style={{ display: "flex", gap: 2, alignItems: "center" }}>
                   {/* === MOBILE ONLY BUTTONS === */}
                   <button className="tb-btn mobile-only-btn" onClick={toggleDark} title="Toggle theme"
@@ -8646,7 +8738,7 @@ if (!groqData || groqData.error) {
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" /></svg>
                     </button>
                   )}
-                  {!["bot", "stats", "calendar", "settings", "goals", "habits", "planner", "leaderboard", "notes"].includes(tab) && (
+                  {!["bot", "stats", "calendar", "settings", "goals", "habits", "planner", "leaderboard", "notes", "news"].includes(tab) && (
                     <button
                       className="add-btn"
                       onMouseDown={onAddHoldStart}
@@ -8671,7 +8763,7 @@ if (!groqData || groqData.error) {
                       tab === "goals" ? <div key="goals" className="content page-fade" style={{ overflowY: "auto" }}>{GoalsPage()}</div> :
                         tab === "habits" ? <div key="habits" className="content page-fade" style={{ overflowY: "auto" }}>{HabitsPage()}</div> :
                           tab === "planner" ? <div key="planner" className="content page-fade" style={{ overflowY: "auto" }}>{PlannerPage()}</div> :
-                            tab === "notes" ? <div key="notes" className="content page-fade" style={{ overflowY: "auto" }}>{NotesPage()}</div> :
+                            tab === "news" ? <div key="news" className="content page-fade" style={{ overflowY: "auto" }}>{NewsPage()}</div> :
 
                               tab === "timeline" ? <div key="timeline" className="content page-fade" style={{ overflowY: "auto", display: "flex", flexDirection: "column", flex: 1 }}>{TimelinePage()}</div> :
                                 tab === "bot" ? <div key="bot" className="page-fade" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: "var(--bg)", paddingBottom: 0 }}>{chatPanelJSX}</div> :
@@ -8753,7 +8845,7 @@ if (!groqData || groqData.error) {
                     { id: "calendar", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>, label: "Calendar" },
                     { id: "notes", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H14L21 14V5C21 3.9 20.1 3 19 3Z" /><path d="M14 21V14H21" /><line x1="8" y1="8" x2="16" y2="8" /><line x1="8" y1="12" x2="13" y2="12" /></svg>, label: t.notes },
                     { id: "planner", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>, label: t.planner },
-
+{ id: "news", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" /><line x1="7" y1="8" x2="17" y2="8" /><line x1="7" y1="12" x2="17" y2="12" /><line x1="7" y1="16" x2="13" y2="16" /></svg>, label: "News" },
                     { id: "settings", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>, label: "Settings" },
                   ].map((v, i) => (
                     <div key={v.id}
