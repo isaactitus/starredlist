@@ -6081,6 +6081,37 @@ const [newsArticles, setNewsArticles] = useState([]);
 const [newsLoading, setNewsLoading] = useState(false);
 const [newsNotice, setNewsNotice] = useState("Search a topic to see how different outlets are covering it.");
 const [newsSearched, setNewsSearched] = useState(false);
+const [newsCategory, setNewsCategory] = useState("general");
+const [newsDate, setNewsDate] = useState("today");
+const [newsMode, setNewsMode] = useState("frontpage");
+const [newsCorrectedFrom, setNewsCorrectedFrom] = useState(null);
+
+useEffect(() => {
+  if (tab !== "news" || newsMode !== "frontpage") return;
+  let cancelled = false;
+  (async () => {
+    setNewsLoading(true);
+    try {
+      const params = new URLSearchParams({ category: newsCategory });
+      if (newsDate !== "today") params.set("date", newsDate);
+      const res = await fetch(`${BACKEND_URL}/api/news/frontpage?${params.toString()}`);
+      const data = await res.json();
+      if (!cancelled) {
+        if (data.articles && data.articles.length) {
+          setNewsArticles(data.articles);
+          setNewsNotice(null);
+        } else {
+          setNewsArticles([]);
+          setNewsNotice("No headlines found for this selection.");
+        }
+      }
+    } catch (err) {
+      if (!cancelled) setNewsNotice("Couldn't reach the news service.");
+    }
+    if (!cancelled) setNewsLoading(false);
+  })();
+  return () => { cancelled = true; };
+}, [tab, newsMode, newsCategory, newsDate]);
   const [notes, setNotes] = useState(() => { try { const s = localStorage.getItem("tf_notes"); return s ? JSON.parse(s) : []; } catch (e) { return []; } });
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [showNoteEditor, setShowNoteEditor] = useState(false);
