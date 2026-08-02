@@ -6466,20 +6466,39 @@ function NewsPage() {
     return `${Math.floor(h / 24)}d ago`;
   };
 
+  const CATEGORIES = [
+    { id: "general", label: "Top", icon: "📰" },
+    { id: "world", label: "World", icon: "🌍" },
+    { id: "nation", label: "Nation", icon: "🏛️" },
+    { id: "business", label: "Business", icon: "💼" },
+    { id: "technology", label: "Tech", icon: "💻" },
+    { id: "entertainment", label: "Entertainment", icon: "🎬" },
+    { id: "sports", label: "Sports", icon: "🏆" },
+    { id: "science", label: "Science", icon: "🔬" },
+    { id: "health", label: "Health", icon: "🩺" },
+  ];
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+
   const runNewsSearch = async (e) => {
     e.preventDefault();
     if (!newsTopic.trim()) return;
+    setNewsMode("search");
     setNewsLoading(true);
     setNewsSearched(true);
+    setNewsCorrectedFrom(null);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/news/compare?topic=${encodeURIComponent(newsTopic)}`);
+      const params = new URLSearchParams({ topic: newsTopic });
+      if (newsDate !== "today") params.set("date", newsDate);
+      const res = await fetch(`${BACKEND_URL}/api/news/compare?${params.toString()}`);
       const data = await res.json();
       if (data.articles && data.articles.length) {
         setNewsArticles(data.articles);
         setNewsNotice(null);
+        setNewsCorrectedFrom(data.correctedFrom || null);
       } else {
         setNewsArticles([]);
-        setNewsNotice("No results for that topic. Try something broader.");
+        setNewsNotice("No results for that topic. Try something broader, or check the spelling.");
       }
     } catch (err) {
       setNewsNotice("Couldn't reach the news service. Check your connection and try again.");
@@ -6487,17 +6506,33 @@ function NewsPage() {
     setNewsLoading(false);
   };
 
+  const backToFrontPage = () => {
+    setNewsMode("frontpage");
+    setNewsTopic("");
+    setNewsCorrectedFrom(null);
+    setNewsNotice(null);
+  };
+
+  const leadArticle = newsArticles[0];
+  const restArticles = newsArticles.slice(1);
+
   return (
     <div style={{ padding: "20px 18px 100px" }}>
+      {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 16 }}>
         <span style={{ fontSize: 20 }}>📰</span>
         <div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: "var(--t1)", letterSpacing: -.3 }}>Multi-Source News</div>
-          <div style={{ fontSize: 12.5, color: "var(--t3)" }}>Same story, every angle</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "var(--t1)", letterSpacing: -.3 }}>
+            {newsMode === "frontpage" ? "Front Page" : "Multi-Source News"}
+          </div>
+          <div style={{ fontSize: 12.5, color: "var(--t3)" }}>
+            {newsMode === "frontpage" ? "Today's headlines, every angle" : "Same story, every angle"}
+          </div>
         </div>
       </div>
 
-      <form onSubmit={runNewsSearch} style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+      {/* Search bar */}
+      <form onSubmit={runNewsSearch} style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 220px", display: "flex", alignItems: "center", background: "var(--s2)", borderRadius: 999, padding: "0 14px" }}>
           <span style={{ fontSize: 14, color: "var(--t3)", marginRight: 6 }}>⌕</span>
           <input
@@ -6516,14 +6551,108 @@ function NewsPage() {
         </button>
       </form>
 
+      {/* Back to front page (search mode only) */}
+      {newsMode === "search" && (
+        <button onClick={backToFrontPage} style={{
+          background: "none", border: "none", color: "var(--acc)", fontSize: 13, fontWeight: 600,
+          padding: "0 0 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 4
+        }}>
+          ← Back to front page
+        </button>
+      )}
+
+      {/* Category tabs (front page mode only) */}
+      {newsMode === "frontpage" && (
+        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 12 }}>
+          {CATEGORIES.map(c => (
+            <button
+              key={c.id}
+              onClick={() => setNewsCategory(c.id)}
+              style={{
+                flexShrink: 0, display: "flex", alignItems: "center", gap: 5,
+                padding: "8px 14px", borderRadius: 999, fontSize: 13, fontWeight: 600,
+                border: newsCategory === c.id ? "none" : "1px solid var(--b1)",
+                background: newsCategory === c.id ? `linear-gradient(135deg,${accent.v},${accent.g})` : "var(--s1)",
+                color: newsCategory === c.id ? "#fff" : "var(--t2)",
+                cursor: "pointer",
+              }}
+            >
+              <span>{c.icon}</span>{c.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Date selector */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+        <button onClick={() => setNewsDate("today")} style={{
+          padding: "7px 14px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, cursor: "pointer",
+          border: newsDate === "today" ? "none" : "1px solid var(--b1)",
+          background: newsDate === "today" ? "var(--accd)" : "var(--s1)",
+          color: newsDate === "today" ? "var(--acc)" : "var(--t3)",
+        }}>Today</button>
+        <button onClick={() => setNewsDate("yesterday")} style={{
+          padding: "7px 14px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, cursor: "pointer",
+          border: newsDate === "yesterday" ? "none" : "1px solid var(--b1)",
+          background: newsDate === "yesterday" ? "var(--accd)" : "var(--s1)",
+          color: newsDate === "yesterday" ? "var(--acc)" : "var(--t3)",
+        }}>Yesterday</button>
+        <input
+          type="date"
+          max={todayStr}
+          value={newsDate !== "today" && newsDate !== "yesterday" ? newsDate : ""}
+          onChange={e => e.target.value && setNewsDate(e.target.value)}
+          style={{
+            padding: "6px 10px", borderRadius: 999, fontSize: 12.5, border: "1px solid var(--b1)",
+            background: "var(--s1)", color: "var(--t2)",
+          }}
+        />
+      </div>
+
+      {/* Typo correction notice */}
+      {newsCorrectedFrom && (
+        <div style={{ background: "var(--accd)", border: `1px solid ${accent.v}44`, borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "var(--t2)", marginBottom: 14 }}>
+          Couldn't find "{newsCorrectedFrom}" — showing results for "<strong>{newsTopic}</strong>" instead.
+        </div>
+      )}
+
+      {/* Notice / empty state */}
       {newsNotice && (
         <div style={{ background: "var(--accd)", border: `1px solid ${accent.v}44`, borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "var(--t2)", marginBottom: 16, lineHeight: 1.5 }}>
           {newsNotice}
         </div>
       )}
 
+      {newsLoading && !newsNotice && newsArticles.length === 0 && (
+        <div style={{ textAlign: "center", padding: "40px 0", color: "var(--t3)", fontSize: 13.5 }}>Loading headlines…</div>
+      )}
+
+      {/* Lead story */}
+      {leadArticle && (
+        <a href={leadArticle.url} target="_blank" rel="noopener noreferrer" style={{
+          display: "block", background: "var(--s1)", borderRadius: 18, overflow: "hidden",
+          textDecoration: "none", border: "1px solid var(--b1)", marginBottom: 16,
+        }}>
+          {leadArticle.image && (
+            <div style={{ height: 200, background: `var(--s2) url(${leadArticle.image}) center/cover no-repeat` }} />
+          )}
+          <div style={{ padding: "16px 18px 18px" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--accd)", color: "var(--acc)", fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 999, marginBottom: 10 }}>
+              <span>{FLAGS[leadArticle.sourceCountry] || "🌐"}</span>
+              <span>{leadArticle.source}</span>
+              <span style={{ opacity: .7, fontWeight: 500 }}>· {timeAgo(leadArticle.publishedAt)}</span>
+            </div>
+            <div style={{ fontSize: 19, fontWeight: 700, color: "var(--t1)", lineHeight: 1.3, marginBottom: 8 }}>{leadArticle.title}</div>
+            {leadArticle.description && (
+              <div style={{ fontSize: 13.5, color: "var(--t3)", lineHeight: 1.5 }}>{leadArticle.description}</div>
+            )}
+          </div>
+        </a>
+      )}
+
+      {/* Rest of the grid */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
-        {newsArticles.map((a, i) => (
+        {restArticles.map((a, i) => (
           <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" style={{
             background: "var(--s1)", borderRadius: 16, overflow: "hidden", textDecoration: "none",
             display: "flex", flexDirection: "column", border: "1px solid var(--b1)"
