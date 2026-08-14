@@ -8923,6 +8923,7 @@ if (!groqData || groqData.error) {
                       tab === "goals" ? <div key="goals" className="content page-fade" style={{ overflowY: "auto" }}>{GoalsPage()}</div> :
                         tab === "habits" ? <div key="habits" className="content page-fade" style={{ overflowY: "auto" }}>{HabitsPage()}</div> :
                           tab === "planner" ? <div key="planner" className="content page-fade" style={{ overflowY: "auto" }}>{PlannerPage()}</div> :
+tab === "notes" ? <div key="notes" className="content page-fade" style={{ overflowY: "auto" }}>{NotesPage()}</div> :
                             tab === "news" ? <div key="news" className="content page-fade" style={{ overflowY: "auto" }}>{NewsPage()}</div> :
 
                               tab === "timeline" ? <div key="timeline" className="content page-fade" style={{ overflowY: "auto", display: "flex", flexDirection: "column", flex: 1 }}>{TimelinePage()}</div> :
