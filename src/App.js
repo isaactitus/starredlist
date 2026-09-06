@@ -13,10 +13,24 @@ import {
 // Backend URL — change this to your Railway URL when deployed
 const BACKEND_URL = "https://starredlist-backend.onrender.com";
 
+async function getAuthToken() {
+  const fb = await getFirebase();
+  if (!fb || !fb.auth.currentUser) return null;
+  try {
+    return await fb.auth.currentUser.getIdToken();
+  } catch (e) {
+    return null;
+  }
+}
+
 async function callLibi(messages, systemPrompt, maxTokens = 1024) {
+  const token = await getAuthToken();
   const res = await fetch(`${BACKEND_URL}/api/chat`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { "Authorization": `Bearer ${token}` } : {})
+    },
     body: JSON.stringify({ messages, systemPrompt, max_tokens: maxTokens }),
   });
   return await res.json();
@@ -6094,7 +6108,10 @@ useEffect(() => {
     try {
       const params = new URLSearchParams({ category: newsCategory });
       if (newsDate !== "today") params.set("date", newsDate);
-      const res = await fetch(`${BACKEND_URL}/api/news/frontpage?${params.toString()}`);
+      const token = await getAuthToken();
+      const res = await fetch(`${BACKEND_URL}/api/news/frontpage?${params.toString()}`, {
+        headers: token ? { "Authorization": `Bearer ${token}` } : {}
+      });
       const data = await res.json();
       if (!cancelled) {
         if (data.articles && data.articles.length) {
@@ -6490,7 +6507,10 @@ function NewsPage() {
     try {
       const params = new URLSearchParams({ topic: newsTopic });
       if (newsDate !== "today") params.set("date", newsDate);
-      const res = await fetch(`${BACKEND_URL}/api/news/compare?${params.toString()}`);
+      const token = await getAuthToken();
+      const res = await fetch(`${BACKEND_URL}/api/news/compare?${params.toString()}`, {
+        headers: token ? { "Authorization": `Bearer ${token}` } : {}
+      });
       const data = await res.json();
       if (data.articles && data.articles.length) {
         setNewsArticles(data.articles);
