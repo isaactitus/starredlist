@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { getAuth } from 'firebase/auth'; // Ensure Firebase auth is initialized in your project
+import { auth } from './firebase';
 
-export default function ChatComponent() {
+export default function App() {
   const [inputPrompt, setInputPrompt] = useState('');
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -11,10 +11,9 @@ export default function ChatComponent() {
     const trimmedPrompt = inputPrompt.trim();
     if (!trimmedPrompt) return;
 
-    const auth = getAuth();
     const currentUser = auth.currentUser;
 
-    // 1. Client-side check: Prompt user if not signed in
+    // 1. Client-Side Pre-check: Prompt user to sign in if unauthenticated
     if (!currentUser) {
       setMessages((prev) => [
         ...prev,
@@ -25,16 +24,14 @@ export default function ChatComponent() {
       return;
     }
 
-    // Display user message immediately
     setMessages((prev) => [...prev, { sender: 'user', text: trimmedPrompt }]);
     setInputPrompt('');
     setLoading(true);
 
     try {
-      // Fetch Firebase ID Token
       const token = await currentUser.getIdToken();
 
-      const response = await fetch('https://starredlist-backend.onrender.com/chat', { // Update with your backend URL
+      const response = await fetch('https://starredlist-backend.onrender.com/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +40,7 @@ export default function ChatComponent() {
         body: JSON.stringify({ prompt: trimmedPrompt }),
       });
 
-      // 2. Server response check: Handle 401 Unauthorized status
+      // 2. Specific 401 Unauthorized response check
       if (response.status === 401) {
         setMessages((prev) => [
           ...prev,
@@ -54,7 +51,7 @@ export default function ChatComponent() {
       }
 
       if (!response.ok) {
-        throw new Error('Server returned an error');
+        throw new Error(`Server returned status code ${response.status}`);
       }
 
       const data = await response.json();
@@ -63,7 +60,7 @@ export default function ChatComponent() {
         { sender: 'LIBI AI', text: data.reply }
       ]);
     } catch (err) {
-      console.error('Chat Error:', err);
+      console.error('Chat API Error:', err);
       setMessages((prev) => [
         ...prev,
         { sender: 'LIBI AI', text: "⚠️ Couldn't reach LIBI AI — please check your internet connection and try again." }
