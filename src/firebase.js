@@ -10,5 +10,15 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+// Check if API key exists before initializing to prevent white-screen crashes
+let app;
+let auth = null;
+
+if (firebaseConfig.apiKey) {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+} else {
+  console.warn("Firebase API key is missing. Check Vercel Environment Variables.");
+}
+
+export { auth };
